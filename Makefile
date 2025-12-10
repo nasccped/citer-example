@@ -29,4 +29,7 @@ clean: $(OUT)
 	@rm -rf $(OUT);
 	@echo "\`$(OUT)\` dir removed...";
 
-.PHONY: all build run clean
+fmt: $(SRC_FILES)
+	clang-format -i $^
+
+.PHONY: all build run clean fmt
