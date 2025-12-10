@@ -31,5 +31,6 @@ clean: $(OUT)
 
 fmt: $(SRC_FILES)
 	clang-format -i $^
+	clang-format -i $(wildcard $(SRC)/*.h)
 
 .PHONY: all build run clean fmt
