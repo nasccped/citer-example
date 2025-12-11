@@ -61,14 +61,9 @@ void citerator_go_next_and_consume(CIterator *self) {
     else if (!citerator_is_done(self)) {
         self->current = self->root_pointer[++self->current_pos];
         update_is_done(self);
-    } else {
-        if (self->root_pointer)
-            free(self->root_pointer);
-        self->root_pointer = NULL;
-        self->current = NULL;
-        self->current_pos = 0;
-        self->queue_len = 0;
     }
+    if (citerator_is_done(self))
+        citerator_clear(self);
 }
 
 /* Move the `current` pointer to the next item pointer on the
@@ -80,7 +75,8 @@ CIterator *citerator_go_next_or_free(CIterator *self) {
     else if (!citerator_is_done(self)) {
         self->current = self->root_pointer[++self->current_pos];
         update_is_done(self);
-    } else {
+    }
+    if (citerator_is_done(self)) {
         citerator_destroy(self);
         self = NULL;
     }
