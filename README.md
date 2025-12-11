@@ -27,7 +27,25 @@ How to use this project:
 git clone https://github.com/nasccped/citer-example && cd citer-example
 ```
 
-2. build and run using the Makefile:
+2. build with make command:
 ```sh
-make build run
+make build
 ```
+
+3. run it with the binary path:
+```sh
+# expected bin path after running `make build`.
+./out/main.exe --help
+```
+
+> [!NOTE]
+>
+> `make run` no longer works since the program expect `argc` to be
+> greater than `1`.
+>
+> A basic run guide:
+> - `<BIN_PATH> --help`: prints the project description
+> - `<BIN_PATH> <1..>`: runs the project part
+>
+> Any other way of use isn't supported. The program will print an
+> usage tip and quit with exit code `1`.
