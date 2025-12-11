@@ -1,3 +1,4 @@
+BasedOnStyle: LLVM
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
@@ -5,3 +6,5 @@ ColumnLimit: 70
 MaxEmptyLinesToKeep: 1
 AllowShortBlocksOnASingleLine: true
 SpaceBeforeParens: ControlStatements
+BinPackArguments: false
+BinPackParameters: false
