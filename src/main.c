@@ -14,19 +14,19 @@
 #define YELLOW "\x1b[93m"
 #define MAGENTA "\x1b[95m"
 #define CYAN "\x1b[96m"
+#define WHITE "\x1b[97m"
 
 typedef enum { NOTE, ERROR, HELP } Tag;
-typedef void (*PartFunction)(int);
+typedef void (*PartFunction)(void);
 
 void usage_tip(void);
 void print_help(void);
-void print_title(int, const char *, ...);
+void print_title(int);
 void print_tag(FILE *, Tag, const char *, ...);
-void part1(int);
-void part2(int);
-void part3(int);
+void part1(void);
+void part2(void);
+void part3(void);
 
-static char TITLE_BUFFER[1024];
 static PartFunction parts[] = { part1, part2, part3 };
 static char *descriptions[] = { "CIterator constructor and destructor",
                                 "CIterator set data and create from",
@@ -80,7 +80,9 @@ int main(int argc, char *argv[]) {
                   RESET);
         return 1;
     }
-    parts[target - 1](target);
+    PartFunction func = parts[target - 1];
+    print_title(target);
+    func();
     return 0;
 }
 
@@ -114,15 +116,12 @@ void print_help(void) {
               RESET);
 }
 
-void print_title(int index, const char *format, ...) {
-    va_list args;
-    va_start(args, format);
-    vsprintf(TITLE_BUFFER, format, args);
-    printf("\x1b[96m%02d.\x1b[97m %s\n", index, TITLE_BUFFER);
-    for (size_t i = 0; i < strlen(TITLE_BUFFER) + 4; i++)
+void print_title(int index) {
+    char *title = descriptions[index - 1];
+    printf("%s%02d%s. %s\n", CYAN, index, WHITE, title);
+    for (size_t i = 0; i < strlen(title) + 4; i++)
         printf("=");
-    printf("\x1b[0m\n\n");
-    va_end(args);
+    printf("%s\n\n", RESET);
 }
 
 void print_tag(FILE *f, Tag t, const char *format, ...) {
@@ -150,9 +149,8 @@ void print_tag(FILE *f, Tag t, const char *format, ...) {
     va_end(args);
 }
 
-void part1(int index) {
+void part1() {
     char *is_null = "is null", *is_not_null = "is not null";
-    print_title(index, descriptions[index - 1]);
     CIterator *citer = NULL;
     printf("We can allocate the CIterator pointer using a\n");
     printf("constructor like function:\n\n");
@@ -184,11 +182,10 @@ void part1(int index) {
               RESET);
 }
 
-void part2(int index) {
+void part2() {
     void (*func_alias1)(CIterator *, void *) =
         (void (*)(CIterator *, void *))push_string_to_citerator;
     CIterator *(*func_alias2)(void *) = (CIterator * (*)(void *)) new_citerator_from_string;
-    print_title(index, descriptions[index - 1]);
     printf("There's two ways to set data into a CIterator struct!\n\n");
     printf("%s1%s. We can use `%sciterator_set%s` function to set data into\n",
            CYAN,
@@ -224,11 +221,10 @@ void part2(int index) {
     printf("avoid unnecessary alloc.\n");
 }
 
-void part3(int index) {
+void part3() {
     CIterator *citer = citerator_new();
     void (*func_alias1)(CIterator *, void *) =
         (void (*)(CIterator *, void *))push_posints_into_citerator;
-    print_title(index, descriptions[index - 1]);
     printf("There's three different ways of CIterator cursor moving:\n\n");
     printf("%s> citerator_go_next%s: move the `current` pointer until the\n", GREEN, RESET);
     printf("  end of the iterator queue (don't free the address holder):\n");
