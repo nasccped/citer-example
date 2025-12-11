@@ -22,8 +22,8 @@ build: $(SRC_FILES)
 	@echo "Done!"
 
 run: $(OUT_FILE)
-	@echo "###### running $< ######";
-	@$<;
+	@echo "This Makefile recipe doesn't works anymore!";
+	@echo -e "Call the program by using \x1b[92m<BINARY_PATH>\x1b[96m <ARGS...>\x1b[0m";
 
 clean: $(OUT)
 	@rm -rf $(OUT);
