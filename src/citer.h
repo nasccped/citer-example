@@ -14,11 +14,14 @@ typedef struct {
     void *current;
     // The position of the current element on data queue.
     size_t current_pos;
+    // If the iteration has reached the end.
+    int is_done;
 } CIterator;
 
 CIterator *citerator_new(void);
 void citerator_set(CIterator *, void *, void (*)(CIterator *, void *));
 CIterator *citerator_new_from(void *, CIterator *(*)(void *));
+int citerator_is_done(CIterator *);
 void citerator_go_next(CIterator *);
 void citerator_go_next_and_consume(CIterator *);
 CIterator *citerator_go_next_or_free(CIterator *);

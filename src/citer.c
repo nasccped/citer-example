@@ -1,6 +1,8 @@
 #include "citer.h"
 #include <stdio.h>
 
+void update_is_done(CIterator *);
+
 /* Create a new empty CIterator. */
 CIterator *citerator_new(void) {
     CIterator *citer = (CIterator *)malloc(sizeof(CIterator));
@@ -10,6 +12,7 @@ CIterator *citerator_new(void) {
     citer->queue_len = 0;
     citer->current = NULL;
     citer->current_pos = 0;
+    citer->is_done = 0;
     return citer;
 }
 
@@ -29,15 +32,21 @@ void citerator_set(CIterator *self, void *data, void (*func)(CIterator *, void *
  * the conversion. */
 CIterator *citerator_new_from(void *data, CIterator *(*func)(void *)) { return func(data); }
 
+/* Returns if the iteration was reached the end. Note that this function returns 1 (true) if the
+ * self pointer is now, preventing the user to try access on not allowed mem. */
+int citerator_is_done(CIterator *self) { return self ? self->is_done : 1; }
+
 /* Move the `current` pointer to the next item pointer on the
  * iteration queue without cleaning the struct inner fields when
  * iteration is done. */
 void citerator_go_next(CIterator *self) {
     if (!self)
         return;
-    if (++self->current_pos < self->queue_len) {
-        self->current = self->root_pointer[self->current_pos];
+    else if (!citerator_is_done(self)) {
+        self->current = self->root_pointer[++self->current_pos];
+        update_is_done(self);
     } else {
+        self->current_pos = 0;
         self->current = NULL;
     }
 }
@@ -49,9 +58,10 @@ void citerator_go_next(CIterator *self) {
 void citerator_go_next_and_consume(CIterator *self) {
     if (!self)
         return;
-    else if (++self->current_pos < self->queue_len)
-        self->current = self->root_pointer[self->current_pos];
-    else {
+    else if (!citerator_is_done(self)) {
+        self->current = self->root_pointer[++self->current_pos];
+        update_is_done(self);
+    } else {
         if (self->root_pointer)
             free(self->root_pointer);
         self->root_pointer = NULL;
@@ -67,25 +77,29 @@ void citerator_go_next_and_consume(CIterator *self) {
 CIterator *citerator_go_next_or_free(CIterator *self) {
     if (!self)
         return NULL;
-    else if (++self->current_pos < self->queue_len)
-        self->current = self->root_pointer[self->current_pos];
-    else {
+    else if (!citerator_is_done(self)) {
+        self->current = self->root_pointer[++self->current_pos];
+        update_is_done(self);
+    } else {
         citerator_destroy(self);
         self = NULL;
     }
-    return self ? self : NULL;
+    return self;
 }
 
 /* Peeks the current item being pointed. */
 void *citerator_peek(CIterator *self) { return self ? self->current : NULL; }
 
 /* Resets the CIterator `current` field to the start of the iter
- * queue. */
+ * queue. Works only when `root_pointer` isn't NULL. */
 void citerator_reset(CIterator *self) {
     if (!self)
         return;
-    self->current = self->root_pointer[0];
-    self->current_pos = 0;
+    else if (self->root_pointer) {
+        self->current = self->root_pointer[0];
+        self->current_pos = 0;
+        self->is_done = 0;
+    }
 }
 
 /* Destroys the CIterator and it's inner data. */
@@ -108,4 +122,13 @@ void citerator_clear(CIterator *self) {
     }
     self->queue_len = 0;
     self->current_pos = 0;
+    self->is_done = 1;
+}
+
+/* Private function that updates the `is_done` field based on other fields. */
+void update_is_done(CIterator *self) {
+    if (!self)
+        return;
+    else if (!self->is_done && self->current_pos >= self->queue_len)
+        self->is_done = 1;
 }
