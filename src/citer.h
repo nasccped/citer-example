@@ -17,13 +17,14 @@ typedef struct {
 } CIterator;
 
 CIterator *citerator_new(void);
-void citerator_set(CIterator *, void *,
-                   void *(*)(CIterator *, void *));
+void citerator_set(CIterator *, void *, void (*)(CIterator *, void *));
 CIterator *citerator_new_from(void *, CIterator *(*)(void *));
 void citerator_go_next(CIterator *);
 void citerator_go_next_and_consume(CIterator *);
 CIterator *citerator_go_next_or_free(CIterator *);
+void *citerator_peek(CIterator *);
 void citerator_reset(CIterator *);
 void citerator_destroy(CIterator *);
+void citerator_clear(CIterator *);
 
 #endif /* _CITER_H_ */
