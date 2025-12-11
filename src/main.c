@@ -4,6 +4,7 @@
 
 #include "citer.h"
 #include "my_string.h"
+#include "posints.h"
 
 #define REPO_URL "https://github.com/nasccped/citer-example"
 #define HELP_FLAG "--help"
@@ -23,11 +24,13 @@ void print_title(int, const char *, ...);
 void print_tag(FILE *, Tag, const char *, ...);
 void part1(int);
 void part2(int);
+void part3(int);
 
 static char TITLE_BUFFER[1024];
-static PartFunction parts[] = { part1, part2 };
+static PartFunction parts[] = { part1, part2, part3 };
 static char *descriptions[] = { "CIterator constructor and destructor",
-                                "CIterator set data and create from" };
+                                "CIterator set data and create from",
+                                "CIterator cursor move" };
 
 int main(int argc, char *argv[]) {
     // when passing unexpected amount of args
@@ -219,4 +222,54 @@ void part2(int index) {
            RESET);
     printf("an already allocated mem (with `%sciterator_set%s`) and\n", CYAN, RESET);
     printf("avoid unnecessary alloc.\n");
+}
+
+void part3(int index) {
+    CIterator *citer = citerator_new();
+    void (*func_alias1)(CIterator *, void *) =
+        (void (*)(CIterator *, void *))push_posints_into_citerator;
+    print_title(index, descriptions[index - 1]);
+    printf("There's three different ways of CIterator cursor moving:\n\n");
+    printf("%s> citerator_go_next%s: move the `current` pointer until the\n", GREEN, RESET);
+    printf("  end of the iterator queue (don't free the address holder):\n");
+    printf("    %sints%s -> ", YELLOW, RESET);
+    for (citerator_set(citer, (int[]){ 2, 3, 5, 7, -1 }, func_alias1); !citerator_is_done(citer);
+         citerator_go_next(citer))
+        printf("%d ", *(int *)citer->current);
+    printf("\n\n  Since the addresses were not freed, we can recover the\n");
+    printf("  iteration by using the `%sciterator_reset%s` function:\n", CYAN, RESET);
+    printf("    %ssame ints%s -> ", YELLOW, RESET);
+    for (citerator_reset(citer); !citerator_is_done(citer); citerator_go_next(citer))
+        printf("%d ", *(int *)citer->current);
+    citerator_clear(citer);
+    printf("\n\n");
+    printf("%s> citerator_go_next_and_consume%s: move the `current` pointer\n", GREEN, RESET);
+    printf("  until the end of the iterator queue. If the end is\n");
+    printf("  reached, the address holder %sis freed%s but the CIterator\n", GREEN, RESET);
+    printf("  pointer remains accessible, allowing it to receive new\n");
+    printf("  itens:\n");
+    printf("    %sints%s -> ", YELLOW, RESET);
+    for (citerator_set(citer, (int[]){ 11, 13, 17, -1 }, func_alias1); !citerator_is_done(citer);
+         citerator_go_next_and_consume(citer))
+        printf("%d ", *(int *)citer->current);
+    printf("\n\n  Now, the addresses were %s%s%s but the CIterator pointer\n",
+           citer->root_pointer ? RED : CYAN,
+           citer->root_pointer ? "not free" : "free",
+           RESET);
+    printf(
+        "  remains %s%s%s!\n\n", citer ? GREEN : RED, citer ? "accessible" : "inaccessible", RESET);
+    printf("%s> citerator_go_next_or_free%s: destroys the entire CIterator\n", GREEN, RESET);
+    printf("  pointer mem when the iteration is done, allowing us to use\n");
+    printf("  the CIterator %sself pointer%s as loop condition:\n", GREEN, RESET);
+    printf("    %sints%s -> ", YELLOW, RESET);
+    for (citerator_set(citer, (int[]){ 19, 23, 29, -1 }, func_alias1); citer;
+         citer = citerator_go_next_or_free(citer))
+        printf("%d ", *(int *)citer->current);
+    printf("\n\n  And now, ");
+    if (!citer)
+        printf("the CIterator pointer %sis NULL%s!\n", GREEN, RESET);
+    else if (!citer->root_pointer)
+        printf("the CIterator pointer %sisn't NULL%s?\n ._.", YELLOW, RESET);
+    else
+        printf("both CIterator and addresses %saren't NULL%s, wth? o_O\n", RED, RESET);
 }
