@@ -18,6 +18,7 @@ void push_string_to_citerator(CIterator *citerator, char *str) {
         queue[i] = &str[i];
     citerator->root_pointer = (void **)queue;
     citerator->current = citerator->root_pointer[0];
+    citerator->is_done = 0;
 }
 
 /* Create a new CIterator function from the self string */
