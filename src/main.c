@@ -22,10 +22,12 @@ void print_help(void);
 void print_title(int, const char *, ...);
 void print_tag(Tag, const char *, ...);
 void part1(int);
+void part2(int);
 
 static char TITLE_BUFFER[1024];
-static PartFunction parts[] = { part1 };
-static char *descriptions[] = { "CIterator constructor and destructor" };
+static PartFunction parts[] = { part1, part2 };
+static char *descriptions[] = { "CIterator constructor and destructor",
+                                "CIterator set data and create from" };
 
 int main(int argc, char *argv[]) {
     // when passing unexpected amount of args
@@ -168,4 +170,44 @@ void part1(int index) {
               "talk about it later.\n",
               CYAN,
               RESET);
+}
+
+void part2(int index) {
+    void (*func_alias1)(CIterator *, void *) =
+        (void (*)(CIterator *, void *))push_string_to_citerator;
+    CIterator *(*func_alias2)(void *) = (CIterator * (*)(void *)) new_citerator_from_string;
+    print_title(index, descriptions[index - 1]);
+    printf("There's two ways to set data into a CIterator struct!\n\n");
+    printf("%s1%s. We can use `%sciterator_set%s` function to set data into\n",
+           CYAN,
+           RESET,
+           CYAN,
+           RESET);
+    printf("   a %snon NULL%s CIterator pointer:\n\n   > ", GREEN, RESET);
+    CIterator *citer = citerator_new();
+    for (citerator_set(citer, "data", func_alias1); !citerator_is_done(citer);
+         citerator_go_next(citer))
+        printf("[ %s%c%s ]", GREEN, *(char *)citer->current, RESET);
+    citerator_destroy(citer);
+    printf("\n\n");
+    printf("%s2%s.We can use the `%sciterator_new_from%s` to create a new CIterator\n",
+           CYAN,
+           RESET,
+           CYAN,
+           RESET);
+    printf("   pointer based on the given type:\n\n   > ");
+    for (citer = citerator_new_from("other data", func_alias2); !citerator_is_done(citer);
+         citerator_go_next(citer))
+        printf("[ %s%c%s ]", GREEN, *(char *)citer->current, RESET);
+    citerator_destroy(citer);
+    printf("\n\n");
+    printf("The key difference is that mem realloc can be %sexpensive%s when\n", RED, RESET);
+    printf("handling big amount of data.\n\n");
+    printf("Instead of %srealloc%s the CIterator mem, we can just %sreuse%s\n",
+           YELLOW,
+           RESET,
+           GREEN,
+           RESET);
+    printf("an already allocated mem (with `%sciterator_set%s`) and\n", CYAN, RESET);
+    printf("avoid unnecessary alloc.\n");
 }
