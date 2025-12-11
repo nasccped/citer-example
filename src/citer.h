@@ -25,6 +25,7 @@ int citerator_is_done(CIterator *);
 void citerator_go_next(CIterator *);
 void citerator_go_next_and_consume(CIterator *);
 CIterator *citerator_go_next_or_free(CIterator *);
+size_t citerator_get_index(CIterator *);
 void *citerator_peek(CIterator *);
 void citerator_reset(CIterator *);
 void citerator_destroy(CIterator *);

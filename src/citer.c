@@ -87,6 +87,10 @@ CIterator *citerator_go_next_or_free(CIterator *self) {
     return self;
 }
 
+/* Returns the position (0 based) of the current item on iteration. Note that this function returns
+ * 0 if the self pointer is null. */
+size_t citerator_get_index(CIterator *self) { return self ? self->current_pos : 0; }
+
 /* Peeks the current item being pointed. */
 void *citerator_peek(CIterator *self) { return self ? self->current : NULL; }
 
