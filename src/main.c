@@ -265,7 +265,7 @@ void part3() {
     if (!citer)
         printf("the CIterator pointer %sis NULL%s!\n", GREEN, RESET);
     else if (!citer->root_pointer)
-        printf("the CIterator pointer %sisn't NULL%s?\n ._.", YELLOW, RESET);
+        printf("the CIterator pointer %sisn't NULL%s? ._.\n", YELLOW, RESET);
     else
         printf("both CIterator and addresses %saren't NULL%s, wth? o_O\n", RED, RESET);
 }
