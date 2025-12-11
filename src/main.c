@@ -20,7 +20,7 @@ typedef void (*PartFunction)(int);
 void usage_tip(void);
 void print_help(void);
 void print_title(int, const char *, ...);
-void print_tag(Tag, const char *, ...);
+void print_tag(FILE *, Tag, const char *, ...);
 void part1(int);
 void part2(int);
 
@@ -32,14 +32,14 @@ static char *descriptions[] = { "CIterator constructor and destructor",
 int main(int argc, char *argv[]) {
     // when passing unexpected amount of args
     if (argc != 2) {
-        print_tag(ERROR, "couldn't run with the provided args: [");
+        print_tag(stderr, ERROR, "couldn't run with the provided args: [");
         if (argc == 1)
-            printf("%s<none>%s", RED, RESET);
+            fprintf(stderr, "%s<none>%s", RED, RESET);
         else {
             for (int i = 1; i < argc; i++)
-                printf("%s%s%s%s", YELLOW, argv[i], RESET, i == argc - 1 ? "" : ", ");
+                fprintf(stderr, "%s%s%s%s", YELLOW, argv[i], RESET, i == argc - 1 ? "" : ", ");
         }
-        printf("]\n\n");
+        fprintf(stderr, "]\n\n");
         usage_tip();
         return 1;
     }
@@ -51,8 +51,12 @@ int main(int argc, char *argv[]) {
     } else {
         for (size_t i = 0; i < strlen(arg); i++) {
             if (arg[i] < '0' || arg[i] > '9') {
-                print_tag(
-                    ERROR, "couldn't run with the provided arg (%s%s%s)\n\n", RED, arg, RESET);
+                print_tag(stderr,
+                          ERROR,
+                          "couldn't run with the provided arg (%s%s%s)\n\n",
+                          RED,
+                          arg,
+                          RESET);
                 usage_tip();
                 return 1;
             }
@@ -61,7 +65,8 @@ int main(int argc, char *argv[]) {
         }
     }
     if ((size_t)target > sizeof(parts) / sizeof(parts[0])) {
-        print_tag(ERROR,
+        print_tag(stderr,
+                  ERROR,
                   "the target part (%s%d%s) isn't available. Consider running the\n"
                   "program with the `%s%s%s` flag.\n",
                   GREEN,
@@ -77,14 +82,16 @@ int main(int argc, char *argv[]) {
 }
 
 void usage_tip(void) {
-    printf("Usage tip: %s<BINARY_PATH>%s <ARG>%s\n\n", GREEN, CYAN, RESET);
-    printf("%s<ARG>%s can be:\n", CYAN, RESET);
-    printf("  %s%-10s%s prints parts index and their descriptions.\n", CYAN, HELP_FLAG, RESET);
-    printf("  %s%-10s%s calls the part function.\n", CYAN, "<NUMERIC>", RESET);
+    fprintf(stderr, "Usage tip: %s<BINARY_PATH>%s <ARG>%s\n\n", GREEN, CYAN, RESET);
+    fprintf(stderr, "%s<ARG>%s can be:\n", CYAN, RESET);
+    fprintf(
+        stderr, "  %s%-10s%s prints parts index and their descriptions.\n", CYAN, HELP_FLAG, RESET);
+    fprintf(stderr, "  %s%-10s%s calls the part function.\n", CYAN, "<NUMERIC>", RESET);
 }
 
 void print_help(void) {
-    print_tag(HELP,
+    print_tag(stdout,
+              HELP,
               "CIterator project implements the iterator abstraction in\n"
               "a generic way (pure C).\n\n");
     printf("It also contains separated parts which you can access\n");
@@ -93,7 +100,8 @@ void print_help(void) {
         printf("  %s%02ld.%s %s\n", CYAN, i + 1, RESET, descriptions[i]);
     }
     printf("\n");
-    print_tag(NOTE,
+    print_tag(stdout,
+              NOTE,
               "did you find any bug? Consider oppening an %sissue%s\n"
               "at %s%s%s!\n",
               GREEN,
@@ -114,7 +122,7 @@ void print_title(int index, const char *format, ...) {
     va_end(args);
 }
 
-void print_tag(Tag t, const char *format, ...) {
+void print_tag(FILE *f, Tag t, const char *format, ...) {
     va_list args;
     va_start(args, format);
     const char *color, *tag_str;
@@ -134,8 +142,8 @@ void print_tag(Tag t, const char *format, ...) {
     default:
         color = RESET;
     }
-    printf("%s%s%s: ", color, tag_str, RESET);
-    vprintf(format, args);
+    fprintf(f, "%s%s%s: ", color, tag_str, RESET);
+    vfprintf(f, format, args);
     va_end(args);
 }
 
@@ -164,7 +172,8 @@ void part1(int index) {
     citerator_destroy(citer);
     printf("using the `%sciterator_destroy%s` function, and now, the CIterator\n", CYAN, RESET);
     printf("pointer %s%s%s.\n\n", citer ? GREEN : RED, citer ? is_null : is_not_null, RESET);
-    print_tag(NOTE,
+    print_tag(stdout,
+              NOTE,
               "we can also use the `%sciterator_go_next_or_free%s` function\n"
               "to auto free the CIterator when the iteration is done, but we'll\n"
               "talk about it later.\n",
