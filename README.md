@@ -30,6 +30,9 @@ git clone https://github.com/nasccped/citer-example && cd citer-example
 2. build with make command:
 ```sh
 make build
+
+# Makefile doesn't work well in Windows OS, consider using the following command
+mkdir out; gcc (Get-ChildItem -Recurse -Path src -Filter *.c | ForEach-Object { $_.FullName }) -o out/main.exe
 ```
 
 3. run it with the binary path:
