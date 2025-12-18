@@ -52,3 +52,14 @@ mkdir out; gcc (Get-ChildItem -Recurse -Path src -Filter *.c | ForEach-Object { 
 >
 > Any other way of use isn't supported. The program will print an
 > usage tip and quit with exit code `1`.
+
+## Walkthrough
+
+A few lessons are passed along the way.
+
+1. **constructor & destructor:** how to create a new `CIterator` pointer
+2. **set and create from:** how to set new data into `CIterator` + how
+   create from the data itself
+3. **cursor move:** how to move the cursor within an iterator queue
+4. **getters:** using `CIterator` functions interface instead of
+   manually field access.
