@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "b_tree.h"
 #include "citer.h"
 #include "my_string.h"
 #include "posints.h"
@@ -26,11 +27,18 @@ void print_tag(FILE *, Tag, const char *, ...);
 void part1(void);
 void part2(void);
 void part3(void);
+void part4(void);
 
-static PartFunction parts[] = { part1, part2, part3 };
-static char *descriptions[] = { "CIterator constructor and destructor",
-                                "CIterator set data and create from",
-                                "CIterator cursor move" };
+int float_comp(float *, float *);
+void ghost_free(void);
+
+static PartFunction parts[] = { part1, part2, part3, part4 };
+static char *descriptions[] = {
+    "CIterator constructor and destructor",
+    "CIterator set data and create from",
+    "CIterator cursor move",
+    "CIterator getters",
+};
 
 int main(int argc, char *argv[]) {
     // when passing unexpected amount of args
@@ -269,3 +277,56 @@ void part3() {
     else
         printf("both CIterator and addresses %saren't NULL%s, wth? o_O\n", RED, RESET);
 }
+
+static float MY_FLOATS[] = { 2.0f, 1.0f, 0.5f, 3.14159f, 6.2831f, 1.4142f };
+
+void part4(void) {
+    int (*comp)(void *, void *) = (int (*)(void *, void *))float_comp;
+    void (*free_func)(void *) = (void (*)(void *))ghost_free;
+    BTree *tree = b_tree_new(comp, free_func);
+    for (size_t i = 0; i < sizeof(MY_FLOATS) / sizeof(MY_FLOATS[0]); i++)
+        b_tree_insert(tree, &MY_FLOATS[i]);
+    CIterator *(*into_citer)(void *) = (CIterator * (*)(void *)) new_citerator_from_b_tree;
+    CIterator *citer = citerator_new_from((void *)tree, into_citer);
+    printf("Manually using the CIterator struct fields can seems a bit hard.\n");
+    printf("A good approach is using the provided %sCIterator interface%s\n", GREEN, RESET);
+    printf("(%sfunctions%s). Then, all pointer handling logic is (almost) safe\n", CYAN, RESET);
+    printf("and fast to use:\n\n");
+    while (!citerator_is_done(citer)) {
+        printf("  [%s%ld%s: %.3f]\n",
+               GREEN,
+               citerator_get_index(citer),
+               RESET,
+               *(float *)citerator_peek(citer));
+        citerator_go_next_and_consume(citer);
+    }
+    printf("\nThe `%sciterator_get_index%s` function returns the index of the\n", CYAN, RESET);
+    printf("current iterator item while `%sciterator_peek%s` returns a pointer\n", CYAN, RESET);
+    printf("to the current item.\n\n");
+    print_tag(stdout,
+              NOTE,
+              "`%sciterator_peek%s` will return a void pointer which can be\n"
+              "%snull%s/needs %sdereferencing%s. Handle it carefully!\n",
+              CYAN,
+              RESET,
+              RED,
+              RESET,
+              YELLOW,
+              RESET);
+    citerator_destroy(citer);
+    b_tree_destroy(tree);
+}
+
+int float_comp(float *self, float *other) {
+    if (!self || !other)
+        return 0;
+    float a = *self, b = *other;
+    if (a < b)
+        return -1;
+    else if (a > b)
+        return 1;
+    else
+        return 0;
+}
+
+void ghost_free(void) {}
